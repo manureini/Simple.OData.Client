@@ -89,6 +89,18 @@ namespace Simple.OData.Client
             return this as FT;
         }
 
+        public FT WithHeader(string name, string value)
+        {
+            this.Command.WithHeader(name, value);
+            return this as FT;
+        }
+        
+        public FT WithHeaders(IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            this.Command.WithHeaders(headers);
+            return this as FT;
+        }
+
         public FT Key(params object[] entryKey)
         {
             this.Command.Key(entryKey);
@@ -175,49 +187,49 @@ namespace Simple.OData.Client
 
         public FT Expand(IEnumerable<string> associations)
         {
-            this.Command.Expand(associations);
+            this.Command.Expand(associations.Select(ODataExpandAssociation.From));
             return this as FT;
         }
 
         public FT Expand(ODataExpandOptions expandOptions, IEnumerable<string> associations)
         {
-            this.Command.Expand(expandOptions, associations);
+            this.Command.Expand(expandOptions, associations.Select(ODataExpandAssociation.From));
             return this as FT;
         }
 
         public FT Expand(params string[] associations)
         {
-            this.Command.Expand(associations);
+            this.Command.Expand(associations.Select(ODataExpandAssociation.From));
             return this as FT;
         }
 
         public FT Expand(ODataExpandOptions expandOptions, params string[] associations)
         {
-            this.Command.Expand(expandOptions, associations);
+            this.Command.Expand(expandOptions, associations.Select(ODataExpandAssociation.From));
             return this as FT;
         }
 
         public FT Expand(params ODataExpression[] associations)
         {
-            this.Command.Expand(associations);
+            this.Command.Expand(associations.Select(a => ODataExpandAssociation.From(a.Reference)));
             return this as FT;
         }
 
         public FT Expand(ODataExpandOptions expandOptions, params ODataExpression[] associations)
         {
-            this.Command.Expand(expandOptions, associations);
+            this.Command.Expand(expandOptions, associations.Select(a => ODataExpandAssociation.From(a.Reference)));
             return this as FT;
         }
 
         public FT Expand(Expression<Func<T, object>> expression)
         {
-            this.Command.Expand(expression.ExtractColumnNames(_session.TypeCache));
+            this.Command.Expand(expression.ExtractExpandAssociations(_session.TypeCache));
             return this as FT;
         }
 
         public FT Expand(ODataExpandOptions expandOptions, Expression<Func<T, object>> expression)
         {
-            this.Command.Expand(expandOptions, expression.ExtractColumnNames(_session.TypeCache));
+            this.Command.Expand(expandOptions, expression.ExtractExpandAssociations(_session.TypeCache));
             return this as FT;
         }
 
