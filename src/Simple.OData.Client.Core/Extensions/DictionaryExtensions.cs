@@ -10,14 +10,14 @@ namespace Simple.OData.Client.Extensions
     static class DictionaryExtensions
     {
         private static ConcurrentDictionary<Type, ActivatorDelegate> _defaultActivators = new ConcurrentDictionary<Type, ActivatorDelegate>();
-        private static ConcurrentDictionary<Tuple<Type,Type>, ActivatorDelegate> _collectionActivators = new ConcurrentDictionary<Tuple<Type,Type>, ActivatorDelegate>();
+        private static ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate> _collectionActivators = new ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate>();
 
         internal static Func<IDictionary<string, object>, ITypeCache, ODataEntry> CreateDynamicODataEntry { get; set; }
 
         internal static void ClearCache()
         {
             _defaultActivators = new ConcurrentDictionary<Type, ActivatorDelegate>();
-            _collectionActivators = new ConcurrentDictionary<Tuple<Type,Type>, ActivatorDelegate>();
+            _collectionActivators = new ConcurrentDictionary<Tuple<Type, Type>, ActivatorDelegate>();
         }
 
         public static T ToObject<T>(this IDictionary<string, object> source, ITypeCache typeCache, bool dynamicObject = false)
@@ -74,7 +74,7 @@ namespace Simple.OData.Client.Extensions
             {
                 return CreateInstanceOfAnonymousType(source, type, typeCache);
             }
-            
+
             var instance = CreateInstance(type);
 
             IDictionary<string, object> dynamicProperties = null;
@@ -191,6 +191,9 @@ namespace Simple.OData.Client.Extensions
 
         private static object ConvertSingle(Type type, ITypeCache typeCache, object itemValue)
         {
+            if (type == typeof(Type))
+                return itemValue;
+
             object TryConvert(object v, Type t) => typeCache.TryConvert(v, t, out var result) ? result : v;
 
             return type == typeof(ODataEntryAnnotations)
@@ -228,12 +231,12 @@ namespace Simple.OData.Client.Extensions
             }
             else
             {
-                var collectionTypes = new []
+                var collectionTypes = new[]
                 {
                     typeof(IList<>).MakeGenericType(elementType),
                     typeof(IEnumerable<>).MakeGenericType(elementType)
                 };
-                var collectionType = type.GetConstructor(new [] {collectionTypes[0]}) != null
+                var collectionType = type.GetConstructor(new[] { collectionTypes[0] }) != null
                     ? collectionTypes[0]
                     : collectionTypes[1];
                 var activator = _collectionActivators.GetOrAdd(new Tuple<Type, Type>(type, collectionType), t => type.CreateActivator(collectionType));
