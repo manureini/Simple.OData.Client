@@ -25,7 +25,18 @@ namespace Simple.OData.Client.Tests.Core
             Assert.Single(association.ExpandAssociations.First().ExpandAssociations);
             Assert.Equal("Orders", association.ExpandAssociations.First().ExpandAssociations.First().Name);
         }
-        
+
+        [Fact]
+        public void CreateExpandAssociationWithTypename()
+        {
+            var association = ODataExpandAssociation.From("My.Namespace/Products");
+
+            Assert.Equal("Products", association.Name);
+            Assert.Equal("My.Namespace", association.TypeName);
+            Assert.Empty(association.ExpandAssociations);
+        }
+
+
         [Fact]
         public void CreateExpandAssociationFromNullStringThrowsArgumentException()
         {

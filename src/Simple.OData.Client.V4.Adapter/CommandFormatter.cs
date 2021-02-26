@@ -30,7 +30,7 @@ namespace Simple.OData.Client.V4.Adapter
             string ConvertValue(object x) => ODataUriUtils.ConvertToUriLiteral(x, odataVersion, (_session.Adapter as ODataAdapter).Model);
 
             if (value is ODataEnumValue && _session.Settings.EnumPrefixFree)
-                value = ((ODataEnumValue) value).Value;
+                value = ((ODataEnumValue)value).Value;
             else if (value is DateTime)
                 value = new DateTimeOffset((DateTime)value);
 
@@ -55,7 +55,7 @@ namespace Simple.OData.Client.V4.Adapter
                         }
                         return new KeyValuePair<ODataExpandAssociation, ODataExpandOptions>(mainAssociation, x.Key.Value);
                     });
-                
+
                 var formattedExpand = string.Join(",", mergedExpandAssociations.Select(x =>
                     FormatExpansionSegment(x.Key, resultCollection, x.Value, command)));
                 commandClauses.Add($"{ODataLiteral.Expand}={formattedExpand}");
@@ -117,6 +117,12 @@ namespace Simple.OData.Client.V4.Adapter
 
             var clauses = new List<string>();
             var text = associationName;
+
+            if (association.TypeName != null)
+            {
+                text = association.TypeName + "/" + text;
+            }
+
             if (expandOptions.ExpandMode == ODataExpandMode.ByReference)
                 text += "/" + ODataLiteral.Ref;
 
@@ -188,10 +194,10 @@ namespace Simple.OData.Client.V4.Adapter
         {
             return MergeExpandAssociations(expandAssociation, ODataExpandAssociation.From(path)).First();
         }
-        
+
         private static IEnumerable<ODataExpandAssociation> MergeExpandAssociations(ODataExpandAssociation first, ODataExpandAssociation second)
         {
-            if (first.Name != second.Name && first.Name != "*") return new [] {first, second};
+            if (first.Name != second.Name && first.Name != "*") return new[] { first, second };
 
             var result = first.Clone();
             result.OrderByColumns.AddRange(second.OrderByColumns.Except(first.OrderByColumns));
@@ -210,17 +216,17 @@ namespace Simple.OData.Client.V4.Adapter
                     }
                     return mainAssociation;
                 });
-            
+
             result.ExpandAssociations.AddRange(mergedExpandAssociations);
-            
-            return new [] {result};
+
+            return new[] { result };
         }
 
         private static ODataExpandAssociation MergeOrderByColumns(ODataExpandAssociation expandAssociation, KeyValuePair<string, bool> orderByColumn)
         {
             if (string.IsNullOrEmpty(orderByColumn.Key))
                 return expandAssociation;
-            
+
             var segments = orderByColumn.Key.Split('/');
             if (segments[0] != expandAssociation.Name)
                 return expandAssociation;
@@ -241,7 +247,7 @@ namespace Simple.OData.Client.V4.Adapter
                 expandAssociation.OrderByColumns.Add(new ODataOrderByColumn(segments[currentIndex], descending));
                 return;
             }
-            
+
             var nestedAssociation = expandAssociation.ExpandAssociations.FirstOrDefault(a => a.Name == segments[currentIndex]);
             if (nestedAssociation != null)
             {
