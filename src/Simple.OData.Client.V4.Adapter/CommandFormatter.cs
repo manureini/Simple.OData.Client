@@ -62,7 +62,7 @@ namespace Simple.OData.Client.V4.Adapter
             }
 
             FormatClause(commandClauses, resultCollection,
-                SelectPathSegmentColumns(command.Details.SelectColumns, null, resultCollection,
+                SelectPathSegmentColumns(command.Details.SelectColumns, resultCollection,
                     command.Details.ExpandAssociations.Select(x => FormatFirstSegment(x.Key.Name)).ToList()),
                 ODataLiteral.Select, FormatSelectItem);
 
@@ -218,7 +218,7 @@ namespace Simple.OData.Client.V4.Adapter
                 });
 
             result.ExpandAssociations.AddRange(mergedExpandAssociations);
-
+            
             return new[] { result };
         }
 
@@ -256,34 +256,16 @@ namespace Simple.OData.Client.V4.Adapter
         }
 
         private IList<string> SelectPathSegmentColumns(
-            IList<string> columns, string path, EntityCollection collection, IList<string> excludePaths = null)
+            IList<string> columns, EntityCollection collection, IList<string> expandedPaths)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                if (excludePaths != null)
-                {
-                    if (excludePaths.Count == 1 && excludePaths[0] == StarString)
-                    {
-                        var firstSegmentPropertyNames = new HashSet<string>(_session.Metadata.GetNavigationPropertyNames(collection.Name).Select(FormatFirstSegment));
-                        return columns.Where(x => !firstSegmentPropertyNames.Any(y => y.Contains(FormatFirstSegment(x)))).ToList();
-                    }
-
-                    return columns.Where(x => !excludePaths.Any(y => FormatFirstSegment(y).Contains(FormatFirstSegment(x)))).ToList();
-                }
-            }
-
-            var firstSegment = FormatFirstSegment(path);
-            if (firstSegment == StarString)
-            {
-                var propertyNames = new HashSet<string>(_session.Metadata.GetNavigationPropertyNames(collection.Name));
-                return columns
-                    .Where(x => HasMultipleSegments(x) && propertyNames.Contains(FormatFirstSegment(x)))
-                    .Select(x => FormatSkipSegments(x, 1)).ToList();
-            }
+            var expandedNavigationProperties = new HashSet<string>(
+                expandedPaths.Contains(StarString) ?
+                _session.Metadata.GetNavigationPropertyNames(collection.Name).Select(FormatFirstSegment) :
+                expandedPaths.Select(FormatFirstSegment));
 
             return columns
-                .Where(x => HasMultipleSegments(x) && FormatFirstSegment(x) == firstSegment)
-                .Select(x => FormatSkipSegments(x, 1)).ToList();
+                .Where(x => !expandedNavigationProperties.Any(y => y.Equals(FormatFirstSegment(x))))
+                .ToList();
         }
 
         private bool IsInnerCollectionOrderBy(string expandAssociation, EntityCollection entityCollection, string orderByColumn)
