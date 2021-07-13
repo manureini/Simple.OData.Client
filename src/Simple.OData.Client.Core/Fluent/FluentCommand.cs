@@ -36,7 +36,7 @@ namespace Simple.OData.Client
         }
 
         internal FluentCommandDetails Details { get; private set; }
-        
+
         internal ResolvedCommand Resolve(ISession session)
         {
             return new ResolvedCommand(this, session);
@@ -356,6 +356,18 @@ namespace Simple.OData.Client
         {
             foreach (var header in headers)
                 Details.Headers[header.Key] = header.Value;
+            return this;
+        }
+
+        public FluentCommand IgnoreNullLinks()
+        {
+            Details.IgnoreNullLinks = true;
+            return this;
+        }
+
+        public FluentCommand DeleteNullLinks()
+        {
+            Details.IgnoreNullLinks = false;
             return this;
         }
 

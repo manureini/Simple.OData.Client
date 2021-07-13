@@ -914,24 +914,27 @@ namespace Simple.OData.Client
                 }
             }
 
-            var entityCollection = _session.Metadata.GetEntityCollection(resolvedCommand.QualifiedEntityCollectionName);
-            var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, request.EntryData);
-
-            var removedLinks = entryDetails.Links
-                .SelectMany(x => x.Value.Where(y => y.LinkData == null))
-                .Select(x => _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, x.LinkName))
-                .ToList();
-
-            foreach (var associationName in removedLinks)
+            if (!(command.Details.IgnoreNullLinks ?? _session.Settings.IgnoreNullLinksOnUpdate))
             {
-                try
+                var entityCollection = _session.Metadata.GetEntityCollection(resolvedCommand.QualifiedEntityCollectionName);
+                var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, request.EntryData);
+
+                var removedLinks = entryDetails.Links
+                    .SelectMany(x => x.Value.Where(y => y.LinkData == null))
+                    .Select(x => _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, x.LinkName))
+                    .ToList();
+
+                foreach (var associationName in removedLinks)
                 {
-                    var entryKey = resolvedCommand.Details.HasKey ? resolvedCommand.KeyValues : resolvedCommand.FilterAsKey;
-                    await UnlinkEntryAsync(resolvedCommand.QualifiedEntityCollectionName, entryKey, associationName, cancellationToken).ConfigureAwait(false);
-                    if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
-                }
-                catch (Exception)
-                {
+                    try
+                    {
+                        var entryKey = resolvedCommand.Details.HasKey ? resolvedCommand.KeyValues : resolvedCommand.FilterAsKey;
+                        await UnlinkEntryAsync(resolvedCommand.QualifiedEntityCollectionName, entryKey, associationName, cancellationToken).ConfigureAwait(false);
+                        if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
 
@@ -1030,7 +1033,7 @@ namespace Simple.OData.Client
             }
         }
 
-        private async Task<Stream> GetMediaStreamAsync(string commandText, IDictionary<string,string> headers, CancellationToken cancellationToken)
+        private async Task<Stream> GetMediaStreamAsync(string commandText, IDictionary<string, string> headers, CancellationToken cancellationToken)
         {
             if (IsBatchResponse)
                 throw new NotSupportedException("Media stream requests are not supported in batch mode.");

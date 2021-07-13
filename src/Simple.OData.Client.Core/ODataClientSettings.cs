@@ -304,9 +304,14 @@ namespace Simple.OData.Client
         public WebRequestExceptionMessageSource WebRequestExceptionMessageSource { get; set; }
 
         /// <summary>
-        /// Gets or sets validations to perform. Default value is <see cref="T:Microsoft.OData.ValidationKinds.All" />,
+        /// Gets or sets validations to perform. Default value is <see cref="T:Microsoft.OData.ValidationKinds.All" />
         /// </summary>
         public ValidationKinds Validations { get; set; } = ValidationKinds.All;
+
+        /// <summary>
+        /// Ignore navigation properties with null value - DELETE .../NavigationProperty/$ref will not be sent
+        /// </summary>
+        public bool IgnoreNullLinksOnUpdate { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataClientSettings"/> class.
@@ -388,6 +393,7 @@ namespace Simple.OData.Client
             this.ReadUntypedAsString = session.Settings.ReadUntypedAsString;
             this.WebRequestExceptionMessageSource = session.Settings.WebRequestExceptionMessageSource;
             this.BatchPayloadUriOption = session.Settings.BatchPayloadUriOption;
+            this.IgnoreNullLinksOnUpdate = session.Settings.IgnoreNullLinksOnUpdate;
         }
     }
 }

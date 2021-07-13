@@ -38,6 +38,7 @@ namespace Simple.OData.Client
         public ConcurrentDictionary<object, IDictionary<string, object>> BatchEntries { get; set; }
         public IDictionary<string, string> Headers { get; set; }
         public IDictionary<string, object> Extensions { get; set; }
+        public bool? IgnoreNullLinks { get; set; }
 
         public FluentCommandDetails(FluentCommandDetails parent, ConcurrentDictionary<object, IDictionary<string, object>> batchEntries)
         {
@@ -88,6 +89,7 @@ namespace Simple.OData.Client
             this.BatchEntries = details.BatchEntries;
             this.Headers = details.Headers;
             this.Extensions = details.Extensions;
+            this.IgnoreNullLinks = details.IgnoreNullLinks;
         }
 
         public bool HasKey => this.KeyValues != null && this.KeyValues.Count > 0 || this.NamedKeyValues != null && this.NamedKeyValues.Count > 0;

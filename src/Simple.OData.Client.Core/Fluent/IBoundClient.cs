@@ -513,6 +513,16 @@ namespace Simple.OData.Client
         /// </value>
         IDictionary<string, object> FilterAsKey { get; }
 
+        /// <summary>
+        /// Ignore navigation properties with null value - DELETE .../NavigationProperty/$ref will not be sent
+        /// </summary>
+        IBoundClient<T> IgnoreNullLinks();
+
+        /// <summary>
+        /// Send DELETE .../NavigationProperty/$ref for navigation properties with null value
+        /// </summary>
+        IBoundClient<T> DeleteNullLinks();
+
         IRequestBuilder<T> BuildRequestFor();
     }
 }

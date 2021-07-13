@@ -25,7 +25,7 @@ namespace Simple.OData.Client
         {
         }
 
-        #pragma warning disable 1591
+#pragma warning disable 1591
 
         public IBoundClient<T> For(string collectionName = null)
         {
@@ -122,6 +122,18 @@ namespace Simple.OData.Client
             return CreateClientForODataEntry();
         }
 
+        public IBoundClient<T> IgnoreNullLinks()
+        {
+            this.Command.IgnoreNullLinks();
+            return this;
+        }
+
+        public IBoundClient<T> DeleteNullLinks()
+        {
+            this.Command.DeleteNullLinks();
+            return this;
+        }
+
         public bool FilterIsKey => this.Command.Details.FilterIsKey;
 
         public IDictionary<string, object> FilterAsKey => this.Command.Details.FilterAsKey;
@@ -133,7 +145,7 @@ namespace Simple.OData.Client
 
 #pragma warning restore 1591
 
-        private BoundClient<ODataEntry> CreateClientForODataEntry() 
+        private BoundClient<ODataEntry> CreateClientForODataEntry()
         {
             return new BoundClient<ODataEntry>(_client, _session, _parentCommand, this.Command, true); ;
         }
