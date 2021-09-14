@@ -19,7 +19,7 @@ namespace Simple.OData.Client
         public TypeCache(ITypeConverter converter, INameMatchResolver nameMatchResolver)
         {
             _cache = new ConcurrentDictionary<Type, TypeCacheResolver>();
-            NameMatchResolver = nameMatchResolver ?? ODataNameMatchResolver.Strict;;
+            NameMatchResolver = nameMatchResolver ?? ODataNameMatchResolver.Strict;
             Converter = converter;
         }
 
@@ -264,7 +264,18 @@ namespace Simple.OData.Client
                 }
                 else if ((targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?)) && value is DateTime time)
                 {
-                    result = new DateTimeOffset(time);
+                    if (time.ToUniversalTime() <= DateTimeOffset.MinValue.UtcDateTime)
+                    {
+                        result = DateTimeOffset.MinValue;
+                    }
+                    else if (time.ToUniversalTime() >= DateTimeOffset.MaxValue.UtcDateTime)
+                    {
+                        result = DateTimeOffset.MaxValue;
+                    }
+                    else
+                    {
+                        result = new DateTimeOffset(time);
+                    }
                 }
                 else if (this.IsEnumType(targetType))
                 {
