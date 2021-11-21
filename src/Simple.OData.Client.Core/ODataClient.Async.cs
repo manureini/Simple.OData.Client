@@ -914,27 +914,24 @@ namespace Simple.OData.Client
                 }
             }
 
-            if (!(command.Details.IgnoreNullLinks ?? _session.Settings.IgnoreNullLinksOnUpdate))
+            var entityCollection = _session.Metadata.GetEntityCollection(resolvedCommand.QualifiedEntityCollectionName);
+            var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, request.EntryData, null, command.Details.IgnoreNullLinks ?? _session.Settings.IgnoreNullLinksOnUpdate);
+
+            var removedLinks = entryDetails.Links
+                .SelectMany(x => x.Value.Where(y => y.LinkData == null))
+                .Select(x => _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, x.LinkName))
+                .ToList();
+
+            foreach (var associationName in removedLinks)
             {
-                var entityCollection = _session.Metadata.GetEntityCollection(resolvedCommand.QualifiedEntityCollectionName);
-                var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, request.EntryData);
-
-                var removedLinks = entryDetails.Links
-                    .SelectMany(x => x.Value.Where(y => y.LinkData == null))
-                    .Select(x => _session.Metadata.GetNavigationPropertyExactName(entityCollection.Name, x.LinkName))
-                    .ToList();
-
-                foreach (var associationName in removedLinks)
+                try
                 {
-                    try
-                    {
-                        var entryKey = resolvedCommand.Details.HasKey ? resolvedCommand.KeyValues : resolvedCommand.FilterAsKey;
-                        await UnlinkEntryAsync(resolvedCommand.QualifiedEntityCollectionName, entryKey, associationName, cancellationToken).ConfigureAwait(false);
-                        if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
-                    }
-                    catch (Exception)
-                    {
-                    }
+                    var entryKey = resolvedCommand.Details.HasKey ? resolvedCommand.KeyValues : resolvedCommand.FilterAsKey;
+                    await UnlinkEntryAsync(resolvedCommand.QualifiedEntityCollectionName, entryKey, associationName, cancellationToken).ConfigureAwait(false);
+                    if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+                }
+                catch (Exception)
+                {
                 }
             }
 

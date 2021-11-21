@@ -70,6 +70,6 @@ namespace Simple.OData.Client
 
         EntityCollection GetActionReturnCollection(string functionName);
 
-        EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null);
+        EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null, bool ignoreNullAndEmptyListIsNull = false);
     }
 }

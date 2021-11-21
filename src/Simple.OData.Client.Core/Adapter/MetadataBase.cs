@@ -135,8 +135,9 @@ namespace Simple.OData.Client
             return segments.Count() == 2 && SegmentsIncludeTypeSpecification(segments);
         }
 
-        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null)
+        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null, bool ignoreNullAndEmptyListIsNull = false)
         {
+            //copy of this method is is MetadataCache
             var entryDetails = new EntryDetails();
 
             foreach (var item in entryData)
@@ -152,14 +153,19 @@ namespace Simple.OData.Client
                         switch (item.Value)
                         {
                             case null:
-                                entryDetails.AddLink(item.Key, null, contentId);
+                                if (!ignoreNullAndEmptyListIsNull)
+                                    entryDetails.AddLink(item.Key, null, contentId);
                                 break;
                             case IEnumerable<object> collection:
+                                if (ignoreNullAndEmptyListIsNull && !collection.Any())
+                                {
+                                    entryDetails.AddLink(item.Key, null, contentId);
+                                    break;
+                                }
                                 foreach (var element in collection)
                                 {
                                     entryDetails.AddLink(item.Key, element, contentId);
                                 }
-
                                 break;
                         }
                     }

@@ -205,10 +205,10 @@ namespace Simple.OData.Client.Adapter
 
         public EntityCollection GetActionReturnCollection(string functionName)
         {
-            return arc.GetOrAdd(functionName, x=>  metadata.GetActionReturnCollection(functionName));
+            return arc.GetOrAdd(functionName, x => metadata.GetActionReturnCollection(functionName));
         }
 
-        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null)
+        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null, bool ignoreNullAndEmptyListIsNull = false)
         {
             // Copied from MetadataBase so we use caches for the property acquisition
             var entryDetails = new EntryDetails();
@@ -226,9 +226,15 @@ namespace Simple.OData.Client.Adapter
                         switch (item.Value)
                         {
                             case null:
-                                entryDetails.AddLink(item.Key, null, contentId);
+                                if (!ignoreNullAndEmptyListIsNull)
+                                    entryDetails.AddLink(item.Key, null, contentId);
                                 break;
                             case IEnumerable<object> collection:
+                                if(ignoreNullAndEmptyListIsNull && !collection.Any())
+                                {
+                                    entryDetails.AddLink(item.Key, null, contentId);
+                                    break;
+                                }
                                 foreach (var element in collection)
                                 {
                                     entryDetails.AddLink(item.Key, element, contentId);
