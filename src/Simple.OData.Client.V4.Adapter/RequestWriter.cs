@@ -335,8 +335,12 @@ namespace Simple.OData.Client.V4.Adapter
 
         protected override void AssignHeaders(ODataRequest request)
         {
-            request.Headers[HttpLiteral.Prefer] =
-                request.ResultRequired ? HttpLiteral.ReturnRepresentation : HttpLiteral.ReturnMinimal;
+            // Prefer in a GET or DELETE request does not have any effect per standard
+            if (request.Method != RestVerbs.Get && request.Method != RestVerbs.Delete)
+            {
+                request.Headers[HttpLiteral.Prefer] =
+                               request.ResultRequired ? HttpLiteral.ReturnRepresentation : HttpLiteral.ReturnMinimal;
+            }
         }
 
         private async Task<IODataRequestMessageAsync> CreateBatchOperationMessageAsync(string method, string collection, IDictionary<string, object> entryData, string commandText, bool resultRequired)
@@ -414,7 +418,7 @@ namespace Simple.OData.Client.V4.Adapter
                     RequestUri = _session.Settings.BaseUri,
                 },
                 EnableMessageStreamDisposal = IsBatch,
-                Validations = _session.Settings.Validations
+                Validations = (Microsoft.OData.ValidationKinds) _session.Settings.Validations
             };
             var contentType = preferredContentType ?? ODataFormat.Json;
             settings.SetContentType(contentType);
