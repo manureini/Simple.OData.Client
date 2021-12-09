@@ -134,6 +134,12 @@ namespace Simple.OData.Client
             return this;
         }
 
+        public IBoundClient<T> IgnoreProperty(string propertyName)
+        {
+            this.Command.IgnoreProperty(propertyName);
+            return this;
+        }
+
         public bool FilterIsKey => this.Command.Details.FilterIsKey;
 
         public IDictionary<string, object> FilterAsKey => this.Command.Details.FilterAsKey;

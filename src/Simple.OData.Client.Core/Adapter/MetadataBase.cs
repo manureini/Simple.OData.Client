@@ -135,13 +135,16 @@ namespace Simple.OData.Client
             return segments.Count() == 2 && SegmentsIncludeTypeSpecification(segments);
         }
 
-        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null, bool ignoreNullAndEmptyListIsNull = false)
+        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null, bool ignoreNullAndEmptyListIsNull = false, List<string> ignoreProperties = null)
         {
             //copy of this method is is MetadataCache
             var entryDetails = new EntryDetails();
 
             foreach (var item in entryData)
             {
+                if (ignoreProperties != null && ignoreProperties.Contains(item.Key))
+                    continue;
+
                 if (HasStructuralProperty(collectionName, item.Key))
                 {
                     entryDetails.AddProperty(item.Key, item.Value);

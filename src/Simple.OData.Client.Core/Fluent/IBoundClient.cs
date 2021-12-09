@@ -523,6 +523,11 @@ namespace Simple.OData.Client
         /// </summary>
         IBoundClient<T> DeleteNullLinks();
 
+        /// <summary>
+        /// Ignore property - do not send value to server
+        /// </summary>
+        IBoundClient<T> IgnoreProperty(string propertyName);
+
         IRequestBuilder<T> BuildRequestFor();
     }
 }

@@ -864,11 +864,14 @@ namespace Simple.OData.Client
                 return _batchResponse.AsEntry(false);
 
             await _session.ResolveAdapterAsync(cancellationToken).ConfigureAwait(false);
+
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
             var resolvedCommand = command.Resolve(_session);
+
             var requestBuilder = new RequestBuilder(resolvedCommand, _session, this.BatchWriter);
             var request = await requestBuilder.InsertRequestAsync(resultRequired, cancellationToken).ConfigureAwait(false);
+
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
             var result = await ExecuteRequestWithResultAsync(request, cancellationToken,
@@ -876,6 +879,7 @@ namespace Simple.OData.Client
             if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
 
             var keyNames = _session.Metadata.GetDeclaredKeyPropertyNames(resolvedCommand.QualifiedEntityCollectionName);
+
             if (result == null && resultRequired && Utils.AllMatch(keyNames, resolvedCommand.CommandData.Keys, _session.Settings.NameMatchResolver))
             {
                 result = await this.GetEntryAsync(request.CommandText, request.EntryData, cancellationToken).ConfigureAwait(false);

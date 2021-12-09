@@ -48,7 +48,7 @@ namespace Simple.OData.Client
             var entryData = _command.CommandData;
 
             return await _session.Adapter.GetRequestWriter(_lazyBatchWriter)
-                .CreateInsertRequestAsync(_command.QualifiedEntityCollectionName, _command.Format(), entryData, resultRequired, GetHeaders()).ConfigureAwait(false);
+                .CreateInsertRequestAsync(_command.QualifiedEntityCollectionName, _command.Format(), entryData, resultRequired, GetHeaders(), _command.Details.IgnoreProperties).ConfigureAwait(false);
         }
 
         public async Task<ODataRequest> UpdateRequestAsync(bool resultRequired, CancellationToken cancellationToken)

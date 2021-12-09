@@ -371,6 +371,12 @@ namespace Simple.OData.Client
             return this;
         }
 
+        public FluentCommand IgnoreProperty(string propertyname)
+        {
+            Details.IgnoreProperties.Add(propertyname);
+            return this;
+        }
+
         internal IList<string> SelectedColumns => Details.SelectColumns;
 
         private IEnumerable<string> SplitItems(IEnumerable<string> columns)

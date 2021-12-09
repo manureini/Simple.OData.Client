@@ -208,13 +208,16 @@ namespace Simple.OData.Client.Adapter
             return arc.GetOrAdd(functionName, x => metadata.GetActionReturnCollection(functionName));
         }
 
-        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null, bool ignoreNullAndEmptyListIsNull = false)
+        public EntryDetails ParseEntryDetails(string collectionName, IDictionary<string, object> entryData, string contentId = null, bool ignoreNullLinks = false, List<string> ignoreProperties = null)
         {
             // Copied from MetadataBase so we use caches for the property acquisition
             var entryDetails = new EntryDetails();
 
             foreach (var item in entryData)
             {
+                if (ignoreProperties != null && ignoreProperties.Contains(item.Key))
+                    continue;
+
                 if (HasStructuralProperty(collectionName, item.Key))
                 {
                     entryDetails.AddProperty(item.Key, item.Value);
@@ -226,11 +229,11 @@ namespace Simple.OData.Client.Adapter
                         switch (item.Value)
                         {
                             case null:
-                                if (!ignoreNullAndEmptyListIsNull)
+                                if (!ignoreNullLinks)
                                     entryDetails.AddLink(item.Key, null, contentId);
                                 break;
                             case IEnumerable<object> collection:
-                                if(ignoreNullAndEmptyListIsNull && !collection.Any())
+                                if (ignoreNullLinks && !collection.Any())
                                 {
                                     entryDetails.AddLink(item.Key, null, contentId);
                                     break;

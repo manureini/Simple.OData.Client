@@ -45,7 +45,7 @@ namespace Simple.OData.Client.V4.Adapter
             }
         }
 
-        protected override async Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired)
+        protected override async Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, List<string> ignoreProperties, bool resultRequired)
         {
             var message = IsBatch
                 ? await CreateBatchOperationMessageAsync(method, collection, entryData, commandText, resultRequired).ConfigureAwait(false)
@@ -62,7 +62,7 @@ namespace Simple.OData.Client.V4.Adapter
             {
                 var contentId = _deferredBatchWriter?.Value.GetContentId(entryData, null);
                 var entityCollection = _session.Metadata.NavigateToCollection(collection);
-                var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId);
+                var entryDetails = _session.Metadata.ParseEntryDetails(entityCollection.Name, entryData, contentId, false, ignoreProperties);
 
                 var entryWriter = await messageWriter.CreateODataResourceWriterAsync().ConfigureAwait(false);
                 var entry = CreateODataEntry(entityType.FullName(), entryDetails.Properties, null);
@@ -77,14 +77,17 @@ namespace Simple.OData.Client.V4.Adapter
 
         private async Task WriteEntryPropertiesAsync(ODataWriter entryWriter, ODataResource entry, IDictionary<string, List<ReferenceLink>> links)
         {
+            List<string> pIgnoreProperties = new List<string>();
+
             await entryWriter.WriteStartAsync(entry).ConfigureAwait(false);
+
             if (_resourceEntryMap.TryGetValue(entry, out var resourceEntry))
             {
                 if (resourceEntry.CollectionProperties != null)
                 {
                     foreach (var prop in resourceEntry.CollectionProperties)
                     {
-                        if (prop.Value != null)
+                        if (prop.Value != null && !pIgnoreProperties.Contains(prop.Key))
                         {
                             await WriteNestedCollectionAsync(entryWriter, prop.Key, prop.Value).ConfigureAwait(false);
                         }
@@ -94,7 +97,7 @@ namespace Simple.OData.Client.V4.Adapter
                 {
                     foreach (var prop in resourceEntry.StructuralProperties)
                     {
-                        if (prop.Value != null)
+                        if (prop.Value != null && !pIgnoreProperties.Contains(prop.Key))
                         {
                             await WriteNestedEntryAsync(entryWriter, prop.Key, prop.Value).ConfigureAwait(false);
                         }
@@ -106,7 +109,7 @@ namespace Simple.OData.Client.V4.Adapter
             {
                 foreach (var link in links)
                 {
-                    if (link.Value.Any(x => x.LinkData != null))
+                    if (link.Value.Any(x => x.LinkData != null) && !pIgnoreProperties.Contains(link.Key))
                     {
                         await WriteLinkAsync(entryWriter, entry.TypeName, link.Key, link.Value).ConfigureAwait(false);
                     }
@@ -418,7 +421,7 @@ namespace Simple.OData.Client.V4.Adapter
                     RequestUri = _session.Settings.BaseUri,
                 },
                 EnableMessageStreamDisposal = IsBatch,
-                Validations = (Microsoft.OData.ValidationKinds) _session.Settings.Validations
+                Validations = (Microsoft.OData.ValidationKinds)_session.Settings.Validations
             };
             var contentType = preferredContentType ?? ODataFormat.Json;
             settings.SetContentType(contentType);
