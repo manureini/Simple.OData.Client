@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Simple.OData.Client
 {
-    public class FluentCommandDetails
+    internal class FluentCommandDetails
     {
         public FluentCommandDetails Parent { get; private set; }
         public string CollectionName { get; set; }
