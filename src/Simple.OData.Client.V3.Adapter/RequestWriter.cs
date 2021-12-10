@@ -25,10 +25,10 @@ namespace Simple.OData.Client.V3.Adapter
             _model = model;
         }
 
-        protected override async Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, bool resultRequired)
+        protected override async Task<Stream> WriteEntryContentAsync(string method, string collection, string commandText, IDictionary<string, object> entryData, List<string> ignoreProperties, bool resultRequired)
         {
             IODataRequestMessageAsync message = IsBatch
-                ? await CreateBatchOperationMessageAsync(method, collection, entryData, commandText, resultRequired).ConfigureAwait(false) 
+                ? await CreateBatchOperationMessageAsync(method, collection, entryData, commandText, resultRequired).ConfigureAwait(false)
                 : new ODataRequestMessage();
 
             if (method == RestVerbs.Get || method == RestVerbs.Delete)
@@ -73,7 +73,7 @@ namespace Simple.OData.Client.V3.Adapter
         protected override async Task<Stream> WriteLinkContentAsync(string method, string commandText, string linkIdent)
         {
             IODataRequestMessageAsync message = IsBatch
-                ? await CreateBatchOperationMessageAsync(method, null, null, commandText, false).ConfigureAwait(false) 
+                ? await CreateBatchOperationMessageAsync(method, null, null, commandText, false).ConfigureAwait(false)
                 : new ODataRequestMessage();
 
             using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(), _model))
@@ -102,7 +102,7 @@ namespace Simple.OData.Client.V3.Adapter
         protected override async Task<Stream> WriteActionContentAsync(string method, string commandText, string actionName, string boundTypeName, IDictionary<string, object> parameters)
         {
             IODataRequestMessageAsync message = IsBatch
-                ? await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false) 
+                ? await CreateBatchOperationMessageAsync(method, null, null, commandText, true).ConfigureAwait(false)
                 : new ODataRequestMessage();
 
             using (var messageWriter = new ODataMessageWriter(message, GetWriterSettings(ODataFormat.Json), _model))
@@ -146,7 +146,7 @@ namespace Simple.OData.Client.V3.Adapter
                 case EdmTypeKind.Collection:
                     var collectionWriter = await parameterWriter.CreateCollectionWriterAsync(paramName).ConfigureAwait(false);
                     await collectionWriter.WriteStartAsync(new ODataCollectionStart()).ConfigureAwait(false);
-                    foreach (var item in (IEnumerable) paramValue)
+                    foreach (var item in (IEnumerable)paramValue)
                     {
                         await collectionWriter.WriteItemAsync(item).ConfigureAwait(false);
                     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
+/*
 namespace Devbridge.BasicAuthentication
 {
     /// <summary>
@@ -193,3 +194,5 @@ namespace Devbridge.BasicAuthentication
         }
     }
 }
+
+*/

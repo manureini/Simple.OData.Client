@@ -3,6 +3,7 @@ using Simple.OData.ProductService.App_Start;
 
 namespace Simple.OData.ProductService
 {
+    /*
     public class WebApiApplication : System.Web.HttpApplication
     {
         protected void Application_Start()
@@ -10,4 +11,5 @@ namespace Simple.OData.ProductService
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }
+    */
 }

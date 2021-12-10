@@ -4,7 +4,6 @@ using System.Data.Services;
 using System.Data.Services.Common;
 using System.Data.Services.Providers;
 using System.Linq;
-using System.ServiceModel.Web;
 using ActionProviderImplementation;
 using NorthwindModel;
 using Simple.OData.NorthwindModel.Entities;
@@ -36,19 +35,19 @@ namespace Simple.OData.NorthwindModel
             base.HandleException(args);
         }
 
-        [WebGet]
+     //   [WebGet]
         public int ParseInt(string number)
         {
             return int.Parse(number);
         }
 
-        [WebGet]
+     //   [WebGet]
         public string ReturnString(string text)
         {
             return text;
         }
 
-        [WebGet]
+     //   [WebGet]
         public IQueryable<int> ReturnIntCollection(int count)
         {
             var numbers = new List<int>();
@@ -59,25 +58,25 @@ namespace Simple.OData.NorthwindModel
             return numbers.AsQueryable();
         }
 
-        [WebGet]
+     //   [WebGet]
         public long PassThroughLong(long number)
         {
             return number;
         }
 
-        [WebGet]
+    //    [WebGet]
         public DateTime PassThroughDateTime(DateTime dateTime)
         {
             return dateTime;
         }
 
-        [WebGet]
+    //    [WebGet]
         public Guid PassThroughGuid(Guid guid)
         {
             return guid;
         }
 
-        [WebGet]
+     //   [WebGet]
         public IQueryable<Address> ReturnAddressCollection(int count)
         {
             var address = new Address { City = "Oslo", Country = "Norway", Region = "Oslo", PostalCode = "1234" };
