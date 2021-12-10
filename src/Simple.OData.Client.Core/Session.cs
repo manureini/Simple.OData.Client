@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Simple.OData.Client
 {
-    class Session : ISession
+    public class Session : ISession
     {
         private IODataAdapter _adapter;
         private HttpConnection _httpConnection;
@@ -16,7 +16,7 @@ namespace Simple.OData.Client
             BaseUri = baseUri,
             MetadataDocument = metadataString
         })
-        { 
+        {
         }
 
         private Session(ODataClientSettings settings)

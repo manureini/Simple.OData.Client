@@ -1,6 +1,6 @@
 ﻿namespace Simple.OData.Client
 {
-    internal class ExpressionContext
+    public class ExpressionContext
     {
         public ISession Session { get; set; }
         public EntityCollection EntityCollection { get; set; }
