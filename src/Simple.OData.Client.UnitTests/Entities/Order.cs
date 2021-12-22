@@ -11,5 +11,7 @@ namespace Simple.OData.Client.Tests
         public DateTimeOffset ShippedDateTimeOffset { get; set; }
 
         public OrderDetail[] OrderDetails { get; set; }
+
+        public Employee Employee { get; set; }
     }
 }

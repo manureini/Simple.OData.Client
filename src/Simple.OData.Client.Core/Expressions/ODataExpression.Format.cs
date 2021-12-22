@@ -177,7 +177,21 @@ namespace Simple.OData.Client
         private string FormatAnyAllFunction(ExpressionContext context)
         {
             var navigationPath = FormatCallerReference();
+
             EntityCollection entityCollection;
+
+             
+            try
+            {
+                entityCollection = context.Session.Metadata.NavigateToCollection(context.EntityCollection, navigationPath);
+            }
+            catch (UnresolvableObjectException)
+            {
+                //assume the simple collection property
+                entityCollection = null;
+            }
+
+            /*
             if (!context.Session.Metadata.HasNavigationProperty(context.EntityCollection.Name, navigationPath))
             {
                 //simple collection property
@@ -186,9 +200,10 @@ namespace Simple.OData.Client
             else
             {
                 entityCollection = context.Session.Metadata.NavigateToCollection(context.EntityCollection, navigationPath);
-            }
+            }*/
 
             string formattedArguments;
+
             if(!this.Function.Arguments.Any() && string.Equals(this.Function.FunctionName, ODataLiteral.Any, StringComparison.OrdinalIgnoreCase))
             {
                 formattedArguments = string.Empty;
@@ -201,6 +216,7 @@ namespace Simple.OData.Client
             }
 
             var formattedNavigationPath = context.Session.Adapter.GetCommandFormatter().FormatNavigationPath(context.EntityCollection, navigationPath);
+
             return FormatScope($"{formattedNavigationPath}/{this.Function.FunctionName.ToLower()}({formattedArguments})", context);
         }
 
