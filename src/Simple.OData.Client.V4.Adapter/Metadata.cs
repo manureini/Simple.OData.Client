@@ -88,7 +88,7 @@ namespace Simple.OData.Client.V4.Adapter
             var entityType = GetEntityTypes().BestMatch(x => x.Name, collectionName, NameMatchResolver);
             if (entityType != null)
                 return entityType.Name;
-            
+
             throw new UnresolvableObjectException(collectionName, $"Entity type [{collectionName}] not found");
         }
 
@@ -171,7 +171,14 @@ namespace Simple.OData.Client.V4.Adapter
 
         public override string GetStructuralPropertyExactName(string collectionName, string propertyName)
         {
-            return GetStructuralProperty(collectionName, propertyName).Name;
+            var property = GetStructuralProperty(collectionName, propertyName);
+
+            if (property.DeclaringType.IsAbstract)
+            {
+                return $"{property.DeclaringType.FullTypeName()}/{property.Name}";
+            }
+
+            return property.Name;
         }
 
         public override string GetStructuralPropertyPath(string collectionName, params string[] propertyNames)
@@ -179,14 +186,14 @@ namespace Simple.OData.Client.V4.Adapter
             if (propertyNames == null || propertyNames.Length == 0)
                 throw new ArgumentNullException(nameof(propertyNames));
             var property = GetStructuralProperty(collectionName, propertyNames[0]);
-            var exactNames = new List<string> {property.Name};
+            var exactNames = new List<string> { property.Name };
 
             for (var i = 1; i < propertyNames.Length; i++)
             {
                 var entityType = GetComplexType(property.Type.FullName());
                 property = GetStructuralProperty(entityType, propertyNames[i]);
                 exactNames.Add(property.Name);
-                
+
                 if (property.Type.IsPrimitive())
                     break;
             }
