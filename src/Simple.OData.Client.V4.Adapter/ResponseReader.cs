@@ -30,7 +30,7 @@ namespace Simple.OData.Client.V4.Adapter
             catch (Exception e)
             {
                 var content = await responseMessage.Content.ReadAsStringAsync();
-                throw new Exception($"{nameof(GetResponseAsync)} fail. Respose Content: {content}", e);
+                throw new Exception($"{nameof(GetResponseAsync)} fail. Status Code: {responseMessage.StatusCode} Respose Content: {content}", e);
             }
         }
 
