@@ -21,9 +21,17 @@ namespace Simple.OData.Client.V4.Adapter
             _model = model;
         }
 
-        public override Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage)
+        public override async Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage)
         {
-            return GetResponseAsync(new ODataResponseMessage(responseMessage));
+            try
+            {
+                return await GetResponseAsync(new ODataResponseMessage(responseMessage));
+            }
+            catch (Exception e)
+            {
+                var content = await responseMessage.Content.ReadAsStringAsync();
+                throw new Exception($"{nameof(GetResponseAsync)} fail. Respose Content: {content}", e);
+            }
         }
 
         public async Task<ODataResponse> GetResponseAsync(IODataResponseMessageAsync responseMessage)
@@ -109,7 +117,7 @@ namespace Simple.OData.Client.V4.Adapter
                         if (operationMessage.StatusCode == (int)HttpStatusCode.NoContent)
                             batch.Add(ODataResponse.FromStatusCode(TypeCache, operationMessage.StatusCode, operationMessage.Headers));
                         else if (operationMessage.StatusCode >= (int)HttpStatusCode.BadRequest)
-                            batch.Add(ODataResponse.FromStatusCode(TypeCache, 
+                            batch.Add(ODataResponse.FromStatusCode(TypeCache,
                                 operationMessage.StatusCode,
                                 operationMessage.Headers,
                                 await operationMessage.GetStreamAsync().ConfigureAwait(false),
