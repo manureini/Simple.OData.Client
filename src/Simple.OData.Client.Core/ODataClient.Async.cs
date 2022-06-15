@@ -714,20 +714,29 @@ namespace Simple.OData.Client
             ODataResponse EmptyResult() => ODataResponse.EmptyFeeds(Session.TypeCache);
             if (IsBatchRequest)
                 return EmptyResult();
-            try
+
+            for (int i = 0; i < 5; i++)
             {
-                using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
+                try
                 {
-                    var responseReader = _session.Adapter.GetResponseReader();
-                    return await responseReader.GetResponseAsync(response).ConfigureAwait(false);
+                    using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
+                    {
+                        var responseReader = _session.Adapter.GetResponseReader();
+                        return await responseReader.GetResponseAsync(response).ConfigureAwait(false);
+                    }
+                }
+                catch (WebRequestException ex)
+                {
+                    if (i >= 3)
+                    {
+                        if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
+                            return EmptyResult();
+                        throw;
+                    }
                 }
             }
-            catch (WebRequestException ex)
-            {
-                if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
-                    return EmptyResult();
-                throw;
-            }
+
+            return null;
         }
 
         public Task<Stream> GetResponseStreamAsync(ODataRequest request)
