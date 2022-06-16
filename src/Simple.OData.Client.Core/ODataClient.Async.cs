@@ -707,6 +707,8 @@ namespace Simple.OData.Client
             return GetResponseAsync(request, CancellationToken.None);
         }
 
+        protected SemaphoreSlim mSemaphore = new SemaphoreSlim(1, 1);
+
         public async Task<ODataResponse> GetResponseAsync(ODataRequest request, CancellationToken cancellationToken)
         {
             if (IsBatchResponse)
@@ -714,20 +716,38 @@ namespace Simple.OData.Client
             ODataResponse EmptyResult() => ODataResponse.EmptyFeeds(Session.TypeCache);
             if (IsBatchRequest)
                 return EmptyResult();
+
+            await mSemaphore.WaitAsync();
+
+            string errors = string.Empty;
+
             try
             {
-                using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
+                for (int i = 0; i < 3; i++)
                 {
-                    var responseReader = _session.Adapter.GetResponseReader();
-                    return await responseReader.GetResponseAsync(response).ConfigureAwait(false);
+                    try
+                    {
+                        using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
+                        {
+                            var responseReader = _session.Adapter.GetResponseReader();
+                            return await responseReader.GetResponseAsync(response).ConfigureAwait(false);
+                        }
+                    }
+                    catch (WebRequestException ex)
+                    {
+                        if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
+                            return EmptyResult();
+
+                        errors += ex.ToString();
+                    }
                 }
             }
-            catch (WebRequestException ex)
+            finally
             {
-                if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
-                    return EmptyResult();
-                throw;
+                mSemaphore.Release();
             }
+
+            throw new Exception($"{nameof(GetResponseAsync)} fail {errors}");
         }
 
         public Task<Stream> GetResponseStreamAsync(ODataRequest request)
