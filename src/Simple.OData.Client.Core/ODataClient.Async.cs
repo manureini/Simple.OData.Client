@@ -740,6 +740,10 @@ namespace Simple.OData.Client
 
                         errors += ex.ToString();
                     }
+                    catch (Exception ex)
+                    {
+                        errors += ex.ToString();
+                    }
                 }
             }
             finally

@@ -134,29 +134,50 @@ namespace Simple.OData.Client
                     ? createEmptyResult()
                     : default(T);
 
+
+            await mSemaphore.WaitAsync();
+
+            string errors = string.Empty;
+
             try
             {
-                using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
+                for (int i = 0; i < 3; i++)
                 {
-                    if (response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NoContent &&
-                        (request.Method == RestVerbs.Get || request.ResultRequired))
+                    try
                     {
-                        var responseReader = _session.Adapter.GetResponseReader();
-                        return createResult(await responseReader.GetResponseAsync(response).ConfigureAwait(false));
+                        using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
+                        {
+                            if (response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NoContent &&
+                                (request.Method == RestVerbs.Get || request.ResultRequired))
+                            {
+                                var responseReader = _session.Adapter.GetResponseReader();
+                                return createResult(await responseReader.GetResponseAsync(response).ConfigureAwait(false));
+                            }
+                            else
+                            {
+                                return default(T);
+                            }
+                        }
                     }
-                    else
+                    catch (WebRequestException ex)
                     {
-                        return default(T);
+                        if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
+                            return createEmptyResult != null ? createEmptyResult() : default(T);
+
+                        errors += ex.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        errors += ex.ToString();
                     }
                 }
             }
-            catch (WebRequestException ex)
+            finally
             {
-                if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
-                    return createEmptyResult != null ? createEmptyResult() : default(T);
-                else
-                    throw;
+                mSemaphore.Release();
             }
+
+            throw new Exception($"{nameof(ExecuteRequestWithResultAsync)} fail {errors}");
         }
 
         private async Task<Stream> ExecuteGetStreamRequestAsync(ODataRequest request, CancellationToken cancellationToken)
