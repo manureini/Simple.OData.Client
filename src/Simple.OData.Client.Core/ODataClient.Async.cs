@@ -707,8 +707,6 @@ namespace Simple.OData.Client
             return GetResponseAsync(request, CancellationToken.None);
         }
 
-        protected SemaphoreSlim mSemaphore = new SemaphoreSlim(1, 1);
-
         public async Task<ODataResponse> GetResponseAsync(ODataRequest request, CancellationToken cancellationToken)
         {
             if (IsBatchResponse)
@@ -716,38 +714,20 @@ namespace Simple.OData.Client
             ODataResponse EmptyResult() => ODataResponse.EmptyFeeds(Session.TypeCache);
             if (IsBatchRequest)
                 return EmptyResult();
-
-            await mSemaphore.WaitAsync();
-
-            string errors = string.Empty;
-
             try
             {
-                for (int i = 0; i < 3; i++)
+                using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
                 {
-                    try
-                    {
-                        using (var response = await _requestRunner.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false))
-                        {
-                            var responseReader = _session.Adapter.GetResponseReader();
-                            return await responseReader.GetResponseAsync(response).ConfigureAwait(false);
-                        }
-                    }
-                    catch (WebRequestException ex)
-                    {
-                        if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
-                            return EmptyResult();
-
-                        errors += ex.ToString();
-                    }
+                    var responseReader = _session.Adapter.GetResponseReader();
+                    return await responseReader.GetResponseAsync(response).ConfigureAwait(false);
                 }
             }
-            finally
+            catch (WebRequestException ex)
             {
-                mSemaphore.Release();
+                if (_settings.IgnoreResourceNotFoundException && ex.Code == HttpStatusCode.NotFound)
+                    return EmptyResult();
+                throw;
             }
-
-            throw new Exception($"{nameof(GetResponseAsync)} fail {errors}");
         }
 
         public Task<Stream> GetResponseStreamAsync(ODataRequest request)
