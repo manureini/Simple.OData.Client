@@ -171,6 +171,15 @@ namespace Simple.OData.Client
             if (details.EntryValue != null)
             {
                 Details.EntryData = _sesson.TypeCache.ToDictionary(details.EntryValue);
+
+                foreach (var ignoreProp in details.IgnoreProperties)
+                {
+                    if (Details.EntryData.ContainsKey(ignoreProp))
+                    {
+                        Details.EntryData.Remove(ignoreProp);
+                    }
+                }
+
                 Details.BatchEntries?.GetOrAdd(details.EntryValue, Details.EntryData);
             }
         }
