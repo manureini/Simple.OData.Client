@@ -279,6 +279,22 @@ namespace Simple.OData.Client
                         result = new DateTimeOffset(time);
                     }
                 }
+                else if (targetType == typeof(DateOnly) && value is Microsoft.OData.Edm.Date dt)
+                {
+                    result = new DateOnly(dt.Year, dt.Month, dt.Day);
+                }
+                else if (targetType == typeof(TimeOnly) && value is Microsoft.OData.Edm.TimeOfDay dt2)
+                {
+                    result = new TimeOnly(dt2.Hours, dt2.Minutes, dt2.Seconds, (int)dt2.Milliseconds);
+                }   
+                else if (targetType == typeof(Microsoft.OData.Edm.Date) && value is DateOnly dateOnly)
+                {
+                    result = new Microsoft.OData.Edm.Date(dateOnly.Year, dateOnly.Month, dateOnly.Day);
+                }
+                else if (targetType == typeof(Microsoft.OData.Edm.TimeOfDay) && value is TimeOnly timeOnly)
+                {
+                    result = new Microsoft.OData.Edm.TimeOfDay(timeOnly.Hour, timeOnly.Minute, timeOnly.Second, timeOnly.Millisecond);
+                }
                 else if (this.IsEnumType(targetType))
                 {
                     result = Enum.ToObject(targetType, value);
