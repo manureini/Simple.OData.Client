@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.OData;
@@ -450,12 +451,9 @@ namespace Simple.OData.Client.V4.Adapter
                 return property?.Type;
             }
 
-            bool isStructural(IEdmTypeReference type) =>
-                type != null && type.TypeKind() == EdmTypeKind.Complex;
-            bool isStructuralCollection(IEdmTypeReference type) =>
-                type != null && type.TypeKind() == EdmTypeKind.Collection && type.AsCollection().ElementType().TypeKind() == EdmTypeKind.Complex;
-            bool isPrimitive(IEdmTypeReference type) =>
-                !isStructural(type) && !isStructuralCollection(type);
+            bool isStructural(IEdmTypeReference type) => type != null && type.TypeKind() == EdmTypeKind.Complex;
+            bool isStructuralCollection(IEdmTypeReference type) => type != null && type.TypeKind() == EdmTypeKind.Collection && type.AsCollection().ElementType().TypeKind() == EdmTypeKind.Complex;
+            bool isPrimitive(IEdmTypeReference type) => typeof(JsonDocument).FullName == type.FullName() || !isStructural(type) && !isStructuralCollection(type);
 
             var resourceEntry = new ResourceProperties(entry);
             entry.Properties = properties
@@ -501,6 +499,12 @@ namespace Simple.OData.Client.V4.Adapter
                     if (Converter.HasObjectConverter(value.GetType()))
                     {
                         return Converter.Convert(value, value.GetType());
+                    }
+                    if (value.GetType() == typeof(JsonDocument))
+                    {
+                        var jsonDocument = (JsonDocument)value;
+                        var json = jsonDocument.RootElement.ToString();
+                        return new ODataUntypedValue { RawValue = json };
                     }
                     return CreateODataEntry(propertyType.FullName(), value.ToDictionary(TypeCache), root);
 

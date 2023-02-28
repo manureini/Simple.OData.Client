@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Simple.OData.Client.Extensions
 {
@@ -58,6 +59,9 @@ namespace Simple.OData.Client.Extensions
 
             if (type == typeof(ODataEntry))
                 return CreateODataEntry(source, typeCache, dynamicObject);
+
+            if (type == typeof(JsonDocument))
+                return CreateJsonDocument(source);
 
             // Check before custom converter so we use the most appropriate type.
             if (source.ContainsKey(FluentCommand.AnnotationsLiteral))
@@ -297,6 +301,12 @@ namespace Simple.OData.Client.Extensions
             return dynamicObject && CreateDynamicODataEntry != null ?
                 CreateDynamicODataEntry(source, typeCache) :
                 new ODataEntry(source);
+        }
+
+        private static JsonDocument CreateJsonDocument(IDictionary<string, object> source)
+        {
+            source.Remove(FluentCommand.AnnotationsLiteral);
+            return JsonSerializer.SerializeToDocument(source);
         }
 
         private static IDictionary<string, object> CreateDynamicPropertiesContainer(Type type, ITypeCache typeCache, object instance, string dynamicPropertiesContainerName)
