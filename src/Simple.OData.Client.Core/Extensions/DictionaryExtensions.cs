@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 
 namespace Simple.OData.Client.Extensions
@@ -306,6 +308,13 @@ namespace Simple.OData.Client.Extensions
         private static JsonDocument CreateJsonDocument(IDictionary<string, object> source)
         {
             source.Remove(FluentCommand.AnnotationsLiteral);
+
+            foreach (var entry in source.ToImmutableDictionary())
+            {
+                var json = Encoding.UTF8.GetString(Convert.FromBase64String((string)entry.Value));
+                source[entry.Key] = json;
+            }
+
             return JsonSerializer.SerializeToDocument(source);
         }
 
