@@ -309,6 +309,9 @@ namespace Simple.OData.Client.Extensions
         {
             source.Remove(FluentCommand.AnnotationsLiteral);
 
+            if (source.ContainsKey("RootElement")) //todo find reason why this is passed
+                return null;
+
             foreach (var entry in source.ToImmutableDictionary())
             {
                 var json = Encoding.UTF8.GetString(Convert.FromBase64String((string)entry.Value));
