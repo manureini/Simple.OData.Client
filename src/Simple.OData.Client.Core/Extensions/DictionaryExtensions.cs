@@ -312,10 +312,25 @@ namespace Simple.OData.Client.Extensions
             if (source.ContainsKey("RootElement")) //todo find reason why this is passed
                 return null;
 
-            foreach (var entry in source.ToImmutableDictionary())
+            foreach (var key in source.Keys.ToArray())
             {
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String((string)entry.Value));
-                source[entry.Key] = json;
+                try
+                {
+                    var value = source[key] as string;
+
+                    if (value == null)
+                        continue;
+
+                    if (value.StartsWith("_b64_:"))
+                    {
+                        var json = Encoding.UTF8.GetString(Convert.FromBase64String(value.Replace("_b64_:", string.Empty)));
+                        source[key] = json;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
 
             return JsonSerializer.SerializeToDocument(source);
