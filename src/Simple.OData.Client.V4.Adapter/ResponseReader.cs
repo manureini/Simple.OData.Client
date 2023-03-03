@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
@@ -273,6 +275,8 @@ namespace Simple.OData.Client.V4.Adapter
             };
         }
 
+        private static Regex _unicodeEscapeRegex = new Regex(@"\\U([0-9A-F]{4})", RegexOptions.IgnoreCase);
+
         private object GetPropertyValue(object value)
         {
             if (value is ODataResource resource)
@@ -297,6 +301,10 @@ namespace Simple.OData.Client.V4.Adapter
                     if (result.StartsWith("\"") && result.EndsWith("\""))
                     {
                         result = result.Substring(1, result.Length - 2);
+
+                        //security?
+                        //convert unicode escapes like \u00e4 to real value     
+                        result = _unicodeEscapeRegex.Replace(result, match => ((char)int.Parse(match.Groups[1].Value, NumberStyles.HexNumber)).ToString());
                     }
                 }
                 return result;

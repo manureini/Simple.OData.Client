@@ -308,31 +308,6 @@ namespace Simple.OData.Client.Extensions
         private static JsonDocument CreateJsonDocument(IDictionary<string, object> source)
         {
             source.Remove(FluentCommand.AnnotationsLiteral);
-
-            if (source.ContainsKey("RootElement")) //todo find reason why this is passed
-                return null;
-
-            foreach (var key in source.Keys.ToArray())
-            {
-                try
-                {
-                    var value = source[key] as string;
-
-                    if (value == null)
-                        continue;
-
-                    if (value.StartsWith("_b64_:"))
-                    {
-                        var json = Encoding.UTF8.GetString(Convert.FromBase64String(value.Replace("_b64_:", string.Empty)));
-                        source[key] = json;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-            }
-
             return JsonSerializer.SerializeToDocument(source);
         }
 
