@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Simple.OData.Client.Extensions;
@@ -20,7 +21,7 @@ namespace Simple.OData.Client
         public Task<IEnumerable<T>> FindEntriesAsync(CancellationToken cancellationToken)
         {
             return FilterAndTypeColumnsAsync(
-                _client.FindEntriesAsync(_command, false, null, cancellationToken), 
+                _client.FindEntriesAsync(_command, false, null, cancellationToken),
                 _command.SelectedColumns, _command.DynamicPropertiesContainerName);
         }
 
@@ -89,8 +90,8 @@ namespace Simple.OData.Client
         public async Task<U> FindScalarAsync<U>(CancellationToken cancellationToken)
         {
             var result = await _client.FindScalarAsync(_command, cancellationToken).ConfigureAwait(false);
-            return _client.IsBatchRequest 
-                ? default(U) 
+            return _client.IsBatchRequest
+                ? default(U)
                 : _session.TypeCache.Convert<U>(result);
         }
 
@@ -116,7 +117,16 @@ namespace Simple.OData.Client
             {
                 TypeCache.Register<T>(_command.DynamicPropertiesContainerName);
             }
-            return result.ToObject<T>(TypeCache, _dynamicResults);
+
+            try
+            {
+                return result.ToObject<T>(TypeCache, _dynamicResults);
+            }
+            catch (Exception e)
+            {
+                var jsonResult = JsonSerializer.Serialize(result);
+                throw new InvalidOperationException("To Object Failed " + jsonResult, e);
+            }
         }
 
         public Task<T> UpdateEntryAsync()
@@ -139,7 +149,7 @@ namespace Simple.OData.Client
             if (_command.Details.HasFilter)
             {
                 var result = await UpdateEntriesAsync(resultRequired, cancellationToken).ConfigureAwait(false);
-                return resultRequired 
+                return resultRequired
                     ? result?.First()
                     : null;
             }
