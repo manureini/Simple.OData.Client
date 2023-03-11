@@ -125,7 +125,8 @@ namespace Simple.OData.Client
             catch (Exception e)
             {
                 var jsonResult = JsonSerializer.Serialize(result);
-                throw new InvalidOperationException("To Object Failed " + jsonResult, e);
+                var jsonCommand = JsonSerializer.Serialize(_command);
+                throw new InvalidOperationException("To Object Failed " + jsonResult + jsonCommand, e);
             }
         }
 
