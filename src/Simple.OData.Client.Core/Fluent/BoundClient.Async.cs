@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Simple.OData.Client.Extensions;
@@ -124,8 +125,8 @@ namespace Simple.OData.Client
             }
             catch (Exception e)
             {
-                var jsonResult = JsonSerializer.Serialize(result);
-                var jsonCommand = JsonSerializer.Serialize(_command);
+                var jsonResult = JsonSerializer.Serialize(result, new JsonSerializerOptions() { ReferenceHandler = ReferenceHandler.IgnoreCycles });
+                var jsonCommand = JsonSerializer.Serialize(_command, new JsonSerializerOptions() { ReferenceHandler = ReferenceHandler.IgnoreCycles });
                 throw new InvalidOperationException("To Object Failed " + jsonResult + jsonCommand, e);
             }
         }
