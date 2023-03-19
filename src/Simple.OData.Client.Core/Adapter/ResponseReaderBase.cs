@@ -5,8 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-using Simple.OData.Client.Extensions;
-
 #pragma warning disable 1591
 
 namespace Simple.OData.Client
