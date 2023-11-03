@@ -258,7 +258,7 @@ namespace Simple.OData.Client
                 }
                 else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && value is DateTimeOffset offset)
                 {
-                    result = offset.DateTime;
+                    result = offset.Offset == default ? offset.UtcDateTime : offset.DateTime;
                 }
                 else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && ImplicitConversionTo<DateTime>(value) is MethodInfo implicitMethod)
                 {
@@ -286,7 +286,7 @@ namespace Simple.OData.Client
                 else if (targetType == typeof(TimeOnly) && value is Microsoft.OData.Edm.TimeOfDay dt2)
                 {
                     result = new TimeOnly(dt2.Hours, dt2.Minutes, dt2.Seconds, (int)dt2.Milliseconds);
-                }   
+                }
                 else if (targetType == typeof(Microsoft.OData.Edm.Date) && value is DateOnly dateOnly)
                 {
                     result = new Microsoft.OData.Edm.Date(dateOnly.Year, dateOnly.Month, dateOnly.Day);
