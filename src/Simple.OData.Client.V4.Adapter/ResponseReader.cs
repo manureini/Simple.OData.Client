@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.OData;
@@ -300,11 +301,8 @@ namespace Simple.OData.Client.V4.Adapter
                     // Don't just replace \" in case we have embedded quotes
                     if (result.StartsWith("\"") && result.EndsWith("\""))
                     {
-                        result = result.Substring(1, result.Length - 2);
-
-                        //security?
-                        //convert unicode escapes like \u00e4 to real value     
-                        result = _unicodeEscapeRegex.Replace(result, match => ((char)int.Parse(match.Groups[1].Value, NumberStyles.HexNumber)).ToString());
+                        var json = JsonDocument.Parse(result);
+                        result = json.RootElement.ToString();
                     }
                 }
                 return result;
