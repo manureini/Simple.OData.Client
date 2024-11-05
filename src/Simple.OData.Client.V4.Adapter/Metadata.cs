@@ -63,14 +63,14 @@ namespace Simple.OData.Client.V4.Adapter
             IEdmEntityType entityType;
             if (TryGetEntitySet(collectionName, out var entitySet))
             {
-                entityType = (_model.FindAllDerivedTypes(entitySet.EntityType())
+                entityType = (_model.FindAllDerivedTypes(entitySet.EntityType)
                     .BestMatch(x => (x as IEdmEntityType).Name, entityTypeName, NameMatchResolver)) as IEdmEntityType;
                 if (entityType != null)
                     return entityType.Name;
             }
             else if (TryGetSingleton(collectionName, out var singleton))
             {
-                entityType = (_model.FindDirectlyDerivedTypes(singleton.EntityType())
+                entityType = (_model.FindDirectlyDerivedTypes(singleton.EntityType)
                     .BestMatch(x => (x as IEdmEntityType).Name, entityTypeName, NameMatchResolver)) as IEdmEntityType;
                 if (entityType != null)
                     return entityType.Name;
@@ -404,7 +404,7 @@ namespace Simple.OData.Client.V4.Adapter
                     .BestMatch(x => x.Name, collectionName, NameMatchResolver);
                 if (entitySet != null)
                 {
-                    entityType = entitySet.EntityType();
+                    entityType = entitySet.EntityType;
                     return true;
                 }
 
@@ -412,7 +412,7 @@ namespace Simple.OData.Client.V4.Adapter
                     .BestMatch(x => x.Name, collectionName, NameMatchResolver);
                 if (singleton != null)
                 {
-                    entityType = singleton.EntityType();
+                    entityType = singleton.EntityType;
                     return true;
                 }
 
@@ -421,7 +421,7 @@ namespace Simple.OData.Client.V4.Adapter
                 {
                     var baseType = GetEntityTypes()
                         .SingleOrDefault(x => _model.FindDirectlyDerivedTypes(x).Contains(derivedType));
-                    if (baseType != null && GetEntitySets().Any(x => x.EntityType() == baseType))
+                    if (baseType != null && GetEntitySets().Any(x => x.EntityType == baseType))
                     {
                         entityType = derivedType;
                         return true;
