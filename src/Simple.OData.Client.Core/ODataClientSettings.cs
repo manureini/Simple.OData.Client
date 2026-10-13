@@ -265,14 +265,6 @@ namespace Simple.OData.Client
         public bool UseAbsoluteReferenceUris { get; set; }
 
         /// <summary>
-        /// Gets or sets the value that indicates either to read untyped properties as strings.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> (Default) to read untyped values as strings; <c>false</c> otherwise.
-        /// </value>
-        public bool ReadUntypedAsString { get; set; } = true;
-
-        /// <summary>
         /// Gets or sets the BatchPayloadUriOption to use when building a batch request payload.
         /// Only available for OData V4.
         /// </summary>
@@ -388,7 +380,6 @@ namespace Simple.OData.Client
             this.OnTrace = session.Settings.OnTrace;
             this.TraceFilter = session.Settings.TraceFilter;
             this.UseAbsoluteReferenceUris = session.Settings.UseAbsoluteReferenceUris;
-            this.ReadUntypedAsString = session.Settings.ReadUntypedAsString;
             this.WebRequestExceptionMessageSource = session.Settings.WebRequestExceptionMessageSource;
             this.BatchPayloadUriOption = session.Settings.BatchPayloadUriOption;
             this.IgnoreNullLinksOnUpdate = session.Settings.IgnoreNullLinksOnUpdate;

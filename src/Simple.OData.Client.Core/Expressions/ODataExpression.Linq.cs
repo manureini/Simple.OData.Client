@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -109,6 +109,11 @@ namespace Simple.OData.Client
                 var target = callExpression.Arguments.FirstOrDefault();
                 if (target != null)
                 {
+                    if (callExpression.Method.Name == "op_Implicit" || callExpression.Method.Name == "op_Explicit")
+                    {
+                        return ParseLinqExpression(target);
+                    }
+
                     var callArguments = string.Equals(callExpression.Method.DeclaringType.FullName, "System.Convert", StringComparison.Ordinal)
                         ? callExpression.Arguments
                         : callExpression.Arguments.Skip(1);

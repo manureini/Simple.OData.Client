@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.OData;
 
 namespace Simple.OData.Client.V4.Adapter
 {
-    class ODataResponseMessage : IODataResponseMessageAsync
+    class ODataResponseMessage : IODataResponseMessage
     {
         private readonly HttpResponseMessage _response;
 
@@ -17,11 +18,11 @@ namespace Simple.OData.Client.V4.Adapter
             _response = response;
         }
 
-        public Task<Stream> GetStreamAsync()
+        public Task<Stream> GetStreamAsync(CancellationToken cancellationToken)
         {
             if (_response.Content != null)
             {
-                return _response.Content.ReadAsStreamAsync();
+                return _response.Content.ReadAsStreamAsync(cancellationToken);
             }
             else
             {
@@ -51,7 +52,7 @@ namespace Simple.OData.Client.V4.Adapter
 
         public Stream GetStream()
         {
-            var getStreamTask = GetStreamAsync();
+            var getStreamTask = GetStreamAsync(CancellationToken.None);
             getStreamTask.Wait();
 
             return getStreamTask.Result;
@@ -71,6 +72,6 @@ namespace Simple.OData.Client.V4.Adapter
         {
             get => (int)_response.StatusCode;
             set => throw new NotImplementedException();
-        }
+        }      
     }
 }

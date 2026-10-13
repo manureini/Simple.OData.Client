@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Vocabularies;
 
@@ -30,8 +31,8 @@ namespace Simple.OData.Client.V4.Adapter
                         DependentProperties = property.DependentProperties(),
                         PrincipalProperties = property.PrincipalProperties(),
                         Name = property.Name,
-                        OnDelete = property.OnDelete,
-                        Target = property.Partner != null 
+                        OnDelete = property.OnDelete?.Action ?? EdmOnDeleteAction.None,
+                        Target = property.Partner != null
                             ? property.Partner.DeclaringEntityType()
                             : property.Type.TypeKind() == EdmTypeKind.Collection
                             ? (property.Type.Definition as IEdmCollectionType).ElementType.Definition as IEdmEntityType
@@ -59,6 +60,27 @@ namespace Simple.OData.Client.V4.Adapter
         public IEdmTerm FindDeclaredTerm(string qualifiedName) { return _source.FindDeclaredTerm(qualifiedName); }
         public IEnumerable<IEdmVocabularyAnnotation> FindDeclaredVocabularyAnnotations(IEdmVocabularyAnnotatable element) { return _source.FindDeclaredVocabularyAnnotations(element); }
         public IEnumerable<IEdmStructuredType> FindDirectlyDerivedTypes(IEdmStructuredType baseType) { return _source.FindDirectlyDerivedTypes(baseType); }
+
+        public IEdmSchemaType FindDeclaredType(ReadOnlySpan<char> qualifiedName)
+        {
+            return _source.FindDeclaredType(qualifiedName);
+        }
+
+        public IEnumerable<IEdmOperation> FindDeclaredBoundOperations(ReadOnlySpan<char> qualifiedName, IEdmType bindingType)
+        {
+            return _source.FindDeclaredBoundOperations(qualifiedName, bindingType);
+        }
+
+        public IEnumerable<IEdmOperation> FindDeclaredOperations(ReadOnlySpan<char> qualifiedName)
+        {
+            return _source.FindDeclaredOperations(qualifiedName);
+        }
+
+        public IEdmTerm FindDeclaredTerm(ReadOnlySpan<char> qualifiedName)
+        {
+            return _source.FindDeclaredTerm(qualifiedName);
+        }
+
         public IEnumerable<IEdmSchemaElement> SchemaElements => _source.SchemaElements;
         public IEnumerable<IEdmVocabularyAnnotation> VocabularyAnnotations => _source.VocabularyAnnotations;
         public IEnumerable<IEdmModel> ReferencedModels => _source.ReferencedModels;

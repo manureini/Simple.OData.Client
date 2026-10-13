@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
@@ -37,7 +38,7 @@ namespace Simple.OData.Client.V4.Adapter
             }
         }
 
-        public async Task<ODataResponse> GetResponseAsync(IODataResponseMessageAsync responseMessage)
+        public async Task<ODataResponse> GetResponseAsync(IODataResponseMessage responseMessage)
         {
             if (responseMessage.StatusCode == (int)HttpStatusCode.NoContent)
             {
@@ -59,7 +60,7 @@ namespace Simple.OData.Client.V4.Adapter
                     }
                     else
                     {
-                        return ODataResponse.FromValueStream(TypeCache, await responseMessage.GetStreamAsync().ConfigureAwait(false), responseMessage is ODataBatchOperationResponseMessage);
+                        return ODataResponse.FromValueStream(TypeCache, await responseMessage.GetStreamAsync(CancellationToken.None).ConfigureAwait(false), responseMessage is ODataBatchOperationResponseMessage);
                     }
                 }
                 else if (payloadKind.Any(x => x.PayloadKind == ODataPayloadKind.Batch))
@@ -163,7 +164,7 @@ namespace Simple.OData.Client.V4.Adapter
             return ODataResponse.FromCollection(TypeCache, collection);
         }
 
-        private ODataResponse ReadResponse(ODataReader odataReader, IODataResponseMessageAsync responseMessage)
+        private ODataResponse ReadResponse(ODataReader odataReader, IODataResponseMessage responseMessage)
         {
             ResponseNode rootNode = null;
             var nodeStack = new Stack<ResponseNode>();

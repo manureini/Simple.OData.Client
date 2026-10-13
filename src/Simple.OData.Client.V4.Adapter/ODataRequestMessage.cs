@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.OData;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.OData;
 
 namespace Simple.OData.Client.V4.Adapter
 {
-    class ODataRequestMessage : IODataRequestMessageAsync
+    class ODataRequestMessage : IODataRequestMessage
     {
         private MemoryStream _stream;
         private readonly Dictionary<string, string> _headers = new Dictionary<string, string>();
@@ -30,7 +31,7 @@ namespace Simple.OData.Client.V4.Adapter
             return _stream ?? (_stream = new MemoryStream());
         }
 
-        public Task<Stream> GetStreamAsync()
+        public Task<Stream> GetStreamAsync(CancellationToken cancellationToken)
         {
             var completionSource = new TaskCompletionSource<Stream>();
             completionSource.SetResult(this.GetStream());

@@ -255,11 +255,11 @@ namespace Simple.OData.Client
                 else if (targetType == typeof(string) && value is byte[] bytes)
                 {
                     result = System.Convert.ToBase64String(bytes);
-                }
+                }              
                 else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && value is DateTimeOffset offset)
                 {
                     result = offset.Offset == default ? offset.UtcDateTime : offset.DateTime;
-                }
+                }                
                 else if ((targetType == typeof(DateTime) || targetType == typeof(DateTime?)) && ImplicitConversionTo<DateTime>(value) is MethodInfo implicitMethod)
                 {
                     result = (DateTime)implicitMethod.Invoke(value, new object[] { value });
@@ -279,6 +279,7 @@ namespace Simple.OData.Client
                         result = new DateTimeOffset(time);
                     }
                 }
+                /*
                 else if (targetType == typeof(DateOnly) && value is Microsoft.OData.Edm.Date dt)
                 {
                     result = new DateOnly(dt.Year, dt.Month, dt.Day);
@@ -295,6 +296,7 @@ namespace Simple.OData.Client
                 {
                     result = new Microsoft.OData.Edm.TimeOfDay(timeOnly.Hour, timeOnly.Minute, timeOnly.Second, timeOnly.Millisecond);
                 }
+                */
                 else if (this.IsEnumType(targetType))
                 {
                     result = Enum.ToObject(targetType, value);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.OData;
@@ -72,7 +73,7 @@ namespace Simple.OData.Client.V4.Adapter
                 await WriteEntryPropertiesAsync(entryWriter, entry, entryDetails.Links).ConfigureAwait(false);
                 UnregisterRootEntry(entry);
 
-                return IsBatch ? null : await message.GetStreamAsync().ConfigureAwait(false);
+                return IsBatch ? null : await message.GetStreamAsync(CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -164,7 +165,7 @@ namespace Simple.OData.Client.V4.Adapter
                     Url = Utils.CreateAbsoluteUri(_session.Settings.BaseUri.AbsoluteUri, linkIdent)
                 };
                 await messageWriter.WriteEntityReferenceLinkAsync(link).ConfigureAwait(false);
-                return IsBatch ? null : await message.GetStreamAsync().ConfigureAwait(false);
+                return IsBatch ? null : await message.GetStreamAsync(CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -214,7 +215,7 @@ namespace Simple.OData.Client.V4.Adapter
                 }
 
                 await parameterWriter.WriteEndAsync().ConfigureAwait(false);
-                return IsBatch ? null : await message.GetStreamAsync().ConfigureAwait(false);
+                return IsBatch ? null : await message.GetStreamAsync(CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -319,7 +320,7 @@ namespace Simple.OData.Client.V4.Adapter
             {
                 var value = writeAsText ? (object)Utils.StreamToString(stream) : Utils.StreamToByteArray(stream);
                 await messageWriter.WriteValueAsync(value);
-                return await message.GetStreamAsync();
+                return await message.GetStreamAsync(CancellationToken.None);
             }
         }
 
@@ -347,11 +348,11 @@ namespace Simple.OData.Client.V4.Adapter
             }
         }
 
-        private async Task<IODataRequestMessageAsync> CreateBatchOperationMessageAsync(string method, string collection, IDictionary<string, object> entryData, string commandText, bool resultRequired)
+        private async Task<IODataRequestMessage> CreateBatchOperationMessageAsync(string method, string collection, IDictionary<string, object> entryData, string commandText, bool resultRequired)
         {
             var message = (await _deferredBatchWriter.Value.CreateOperationMessageAsync(
                 Utils.CreateAbsoluteUri(_session.Settings.BaseUri.AbsoluteUri, commandText),
-                method, collection, entryData, resultRequired).ConfigureAwait(false)) as IODataRequestMessageAsync;
+                method, collection, entryData, resultRequired).ConfigureAwait(false)) as IODataRequestMessage;
 
             return message;
         }
@@ -521,9 +522,10 @@ namespace Simple.OData.Client.V4.Adapter
                     {
                         foreach (var mappedType in mappedTypes)
                         {
-                            if (TryConvert(value, mappedType.Key, out var result))
-                                return result;
-                            else if (TypeCache.TryConvert(value, mappedType.Key, out result))
+                            //if (TryConvert(value, mappedType.Key, out var result))
+                            //    return result;
+                            //else 
+                            if (TypeCache.TryConvert(value, mappedType.Key, out var result))
                                 return result;
                         }
                         throw new NotSupportedException($"Conversion is not supported from type {value.GetType()} to OData type {propertyType}");
@@ -548,6 +550,7 @@ namespace Simple.OData.Client.V4.Adapter
             }
         }
 
+        /*
         public static bool TryConvert(object value, Type targetType, out object result)
         {
             try
@@ -571,6 +574,7 @@ namespace Simple.OData.Client.V4.Adapter
                 return false;
             }
         }
+        */
 
         private static readonly Dictionary<Type, EdmPrimitiveTypeKind> _typeMap = new[]
             {
@@ -628,9 +632,10 @@ namespace Simple.OData.Client.V4.Adapter
                 new KeyValuePair<Type, EdmPrimitiveTypeKind>(typeof(char[]), EdmPrimitiveTypeKind.String),
                 new KeyValuePair<Type, EdmPrimitiveTypeKind>(typeof(char), EdmPrimitiveTypeKind.String),
                 new KeyValuePair<Type, EdmPrimitiveTypeKind>(typeof(char?), EdmPrimitiveTypeKind.String),
-
+                /*
                 new KeyValuePair<Type, EdmPrimitiveTypeKind>(typeof(Date), EdmPrimitiveTypeKind.Date),
                 new KeyValuePair<Type, EdmPrimitiveTypeKind>(typeof(Date?), EdmPrimitiveTypeKind.Date),
+                */
             }
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }

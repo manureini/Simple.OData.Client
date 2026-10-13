@@ -25,6 +25,14 @@ namespace Simple.OData.Client.Tests.Core
             Expression<Func<TestEntity, bool>> filter = x => ids.Contains(x.ProductID);
             Assert.Equal("(ProductID in (1,2,3))", ODataExpression.FromLinqExpression(filter).AsString(_session));
         }
+
+        [Fact]
+        public void FilterEntitiesWithArrayContains()
+        {
+            var ids = new[] { 1, 2, 3 };
+            Expression<Func<TestEntity, bool>> filter = x => ids.Contains(x.ProductID);
+            Assert.Equal("(ProductID in (1,2,3))", ODataExpression.FromLinqExpression(filter).AsString(_session));
+        }
         
         [Fact]
         public void FilterEntitiesByStringPropertyWithContains()

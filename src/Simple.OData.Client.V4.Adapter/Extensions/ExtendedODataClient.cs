@@ -19,7 +19,6 @@ namespace Simple.OData.Client.V4.Adapter.Extensions
             var client = new ExtendedBoundClient<IDictionary<string, object>>(_baseClient, _baseClient.Session);
             client.For(collectionName);
             _baseClient.Session.Settings.IgnoreUnmappedProperties = true;
-            _baseClient.Session.Settings.ReadUntypedAsString = false;
             return client;
         }
 
@@ -28,7 +27,6 @@ namespace Simple.OData.Client.V4.Adapter.Extensions
             var client = new ExtendedBoundClient<ODataEntry>(_baseClient, _baseClient.Session, true);
             client.For(expression);
             _baseClient.Session.Settings.IgnoreUnmappedProperties = true;
-            _baseClient.Session.Settings.ReadUntypedAsString = false;
             return client;
         }
 

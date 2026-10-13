@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.OData;
 
@@ -34,7 +35,7 @@ namespace Simple.OData.Client.V4.Adapter
             if (_pendingChangeSet)
                 await _batchWriter.WriteEndChangesetAsync().ConfigureAwait(false);
             await _batchWriter.WriteEndBatchAsync().ConfigureAwait(false);
-            var stream = await _requestMessage.GetStreamAsync().ConfigureAwait(false);
+            var stream = await _requestMessage.GetStreamAsync(CancellationToken.None).ConfigureAwait(false);
             return CreateMessageFromStream(stream, _requestMessage.Url, _requestMessage.GetHeader);
         }
 
